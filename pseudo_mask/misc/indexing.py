@@ -3,7 +3,8 @@ import torch.nn.functional as F
 import numpy as np
 
 class PathIndex:
-
+    """只对这个半径内所有点计算affinity
+    """
     def __init__(self, radius, default_size):
         self.radius = radius
         self.radius_floor = int(np.ceil(radius) - 1)

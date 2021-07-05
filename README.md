@@ -5,6 +5,46 @@ Causal Intervention for Weakly Supervised Semantic Segmentation.
 Dong Zhang, Hanwang Zhang, Jinhui Tang, Xiansheng Hua, and Qianru Sun.
 NeurIPS, 2020. [[CONTA]](https://arxiv.org/abs/2009.12547)
 
+
+## 论文阅读
+
+### 问题
+不完美的pseudo-mask无非就以下两种基本的情况：
+1. 没cover到完整的区域(Incomplete Foreground)；
+2. 超出了本身的区域。对于第二种情况我们又将其分为两种具体的case：
+    - 超出到了其他前景目标区域中(Object Ambiguity)
+    - 超出到了背景区域中(Incomplete Background)。
+
+简而言之，就是：本应是别的前景变成这个前景、本应是背景变前景和本应是前景变背景。
+
+### 原因
+用结构化因果模型来阐释为什么会产生这些问题：
+![](images/scm.png)
+C是数据集的上下文先验，X是输入图像，Y是图像对应的类别标签，M被认为是X在上下文先验C下的一个具体的表示。
+
+举个例子，只要有“马”出现的时候，那么一般同时都会有“人”的存在，那么分类模型就会把“马”和“人”进行关联，导致马的部分的CAM会落到人所在的像素区域中。
+
+### 解决方法
+使用因果干预切断上下文先验和图像之间的关联。
+
+最好的方法：
+获得这样一个数据集——其中不同种类的目标的各种角度均被放在所有可能的上下文中进行了拍摄。
+
+退而求其次：
+通过切断上下文先验C和图像X之间的关联，使得X能和每一种C都公平地进行结合，从而打破弱监督语义分割模型在分类过程中的X和Y之间的虚假关联，以产生质量更高的CAM用于seed area。
+
+但是在WSSS任务中，上下文先验C本身是不可知的。本文使用Class-Specific Average Mask来近似构建一个Confounder set，其中Confounder Set中的每一项是通过对每个类的mask进行平均后获得的均值。M是C的线性组合。
+
+### 方法
+![](images/conta.png)
+1. 通过初始化弱监督语义分割模型获取图像的mask信息
+2. 构建Confounder set并去除confounder
+3. 将去除confounder后的mask拼接到下一轮的分类模型的backbone中以产生更高质量的CAM，产生的CAM又可以用来产生更高质量的mask
+
+循环几次上面三个步骤。
+
+---
+
 ## Requirements
 
 * PyTorch 1.2.0, torchvision 0.4.0, and more in requirements.txt

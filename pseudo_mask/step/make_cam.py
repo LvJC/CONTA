@@ -52,6 +52,7 @@ def _work(process_id, model, dataset, args):
             highres_cam /= F.adaptive_max_pool2d(highres_cam, (1, 1)) + 1e-5
 
             # save cams
+            # keys表示类别，不算背景
             np.save(os.path.join(args.cam_out_dir, img_name + '.npy'),
                     {"keys": valid_cat, "cam": strided_cam.cpu(), "high_res": highres_cam.cpu().numpy()})
 
