@@ -1,0 +1,10 @@
+*.m
+*.tar
+*.log
+*.npy
+*.pth
+
+result/
+voc12/VOCdevkit
+
+__pycache__
